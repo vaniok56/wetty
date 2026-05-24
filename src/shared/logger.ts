@@ -11,7 +11,7 @@ const dev = combine(
   simple(),
 );
 
-const prod = combine(label({ label: 'Wetty' }), timestamp(), json());
+const prod = combine(json());
 
 let globalLogger = winston.createLogger({
   format: isDev ? dev : prod,

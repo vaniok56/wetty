@@ -1,111 +1,85 @@
 @use './variables';
 
 #options {
-  height: 16px;
-  position: absolute;
-  right: 1em;
-  top: 1em;
-  width: 16px;
-  z-index: 20;
-
-  .toggler {
-    color: variables.$lgrey;
-    display: inline-block;
-    font-size: 16px;
-    position: absolute;
-    right: 1em;
-    top: 0;
-    z-index: 20;
-
-    :hover {
-      color: variables.$white;
-    }
-  }
-
-  .editor {
-    background-color: rgba(0, 0, 0, 0.85);
-    border-color: rgba(255, 255, 255, 0.25);
-    border-radius: 0.3em;
-    color: #eee;
-    display: none;
-    font-size: 24px;
-    height: 100%;
-    padding: 0.5em;
-    position: relative;
-    right: 2em;
-    top: 1em;
-    width: 100%;
-  }
-}
-
-#options.opened {
-  height: max(min(300px, 75vh), 50vh);
-  width: max(min(500px, 75vw), 50vw);
-
-  .editor {
-    display: flex;
-  }
-
-  .error {
-    color: red;
-  }
+  display: none;
 }
 
 #functions {
-  position: fixed;
-  right: 2em;
-  top: 6em;
+  position: absolute;
+  right: 16px;
+  top: 64px;
   z-index: 20;
 
-  > a {
-    padding: 10px;
-    position: absolute;
-    right: -10px;
-    top: -40px;
-    color: variables.$lgrey;
+  > .toggler {
+    background: rgba(138, 180, 255, 0.1);
+    border: 1px solid rgba(138, 180, 255, 0.2);
+    border-radius: 8px;
+    color: #8ab4ff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 40px;
+    width: 40px;
+    transition: all 0.2s;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 
-    :hover {
-      color: variables.$white;
+    &:hover {
+      background: rgba(138, 180, 255, 0.2);
+      transform: scale(1.05);
     }
   }
 
   .onscreen-buttons {
+    background: rgba(13, 17, 23, 0.98);
+    border: 1px solid #30363d;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
     display: none;
-    width: 200px;
-    height: 200px;
-    border: solid 2px rgba(255, 255, 255, 0.25);
-    border-radius: 0.3em;
-    background-color: rgba(0, 0, 0, 0.85);
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    padding: 12px;
+    position: absolute;
+    top: 48px;
+    right: 0;
+    width: 180px;
+
+    &.active {
+      display: grid;
+    }
+
     > a {
-      bottom: 1em;
-      right: 2em;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      color: #c9d1d9;
+      display: flex;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      font-weight: bold;
+      height: 48px;
+      justify-content: center;
       text-decoration: none;
-      color: white;
-      > div {
-        padding: 5px;
-        outline: 2px solid white;
-        margin: 10px;
-        display: inline-block;
-        font-weight: bold;
-        border-radius: 10px;
+      text-transform: uppercase;
+      transition: all 0.1s;
+      width: 48px;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.15);
+        border-color: rgba(255, 255, 255, 0.3);
       }
-    }
-  }
 
-  .active {
-    display: block;
-  }
+      &:active {
+        background: variables.$accent;
+        color: #000;
+        transform: translateY(1px);
+      }
 
-  .onscreen-buttons > a:active {
-    > div {
-      background-color: rgba(255, 255, 255, 0.25);
-    }
-  }
-
-  #onscreen-ctrl.active {
-    display: inline-block;
-    > div {
-      background-color: lightgray;
+      &#onscreen-ctrl.active {
+        background: variables.$accent;
+        border-color: variables.$accent;
+        color: #000;
+      }
     }
   }
 }

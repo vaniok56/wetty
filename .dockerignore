@@ -8,5 +8,8 @@ node_modules
 **/*.service
 dist
 build
+.DS_Store
+npm-debug.log*
+pnpm-debug.log*
 docs
 Dockerfile

@@ -78,7 +78,14 @@ const simulateBackspace = (): void => {
  *              its corresponding character code.
  */
 const simulateCTRLAndKey = (key: string): void => {
-  window.wetty_term?.input(`${String.fromCharCode(key.toUpperCase().charCodeAt(0) - 64)}`, false);
+  const upperKey = key.toUpperCase();
+  if (upperKey === 'C') {
+    // Explicitly send the exact hex byte for Ctrl+C to ensure it interrupts properly
+    window.wetty_term?.input('\x03', false);
+  } else {
+    // Fallback for other Ctrl shortcuts
+    window.wetty_term?.input(`${String.fromCharCode(upperKey.charCodeAt(0) - 64)}`, false);
+  }
 }
 
 /**
@@ -184,6 +191,32 @@ const pressRIGHT = (): void => {
 }
 
 /**
+ * Simulates pressing the ENTER key by sending the CR character (ASCII code 13)
+ * to the terminal. If the CTRL key is active, it toggles the CTRL state off.
+ * After sending the CR character, the terminal is focused.
+ */
+const pressENTER = (): void => {
+  if (ctrlFlag) {
+    toggleCTRL();
+  }
+  window.wetty_term?.input('\x0D', false);
+  window.wetty_term?.focus();
+}
+
+/**
+ * Simulates pressing the ALT key (often used as ESC in terminals).
+ * Does not insert text, but sends an ESC prefix or handles mode changes.
+ * Here we map it to toggling the ALT state or sending an ESC prefix.
+ */
+const pressALT = (): void => {
+  if (ctrlFlag) {
+    toggleCTRL();
+  }
+  window.wetty_term?.input('\x1B', false);
+  window.wetty_term?.focus();
+}
+
+/**
  * Toggles the visibility of the onscreen buttons by adding or removing
  * the 'active' class to the element with the ID 'onscreen-buttons'.
  */
@@ -199,8 +232,6 @@ const toggleFunctions = (): void => {
 declare global {
   interface Window {
     wetty_term?: Term;
-    wetty_close_config?: () => void;
-    wetty_save_config?: (newConfig: Options) => void;
     clipboardData: DataTransfer;
     loadOptions: (conf: Options) => void;
     toggleFunctions?: () => void;
@@ -211,6 +242,8 @@ declare global {
     pressTAB?: () => void;
     pressLEFT?: () => void;
     pressRIGHT?: () => void;
+    pressENTER?: () => void;
+    pressALT?: () => void;
   }
 }
 
@@ -219,10 +252,17 @@ export function terminal(socket: Socket): Term | undefined {
   if (_.isNull(termElement)) return undefined;
   termElement.innerHTML = '';
   term.open(termElement);
+  term.options.scrollback = 1000;
+  // This allows scrolling past the end of the content by 5 lines
+  term.options.scrollOnUserInput = true;
+  (term as any)._core.options.scrollback = 1000;
+  (term as any)._core.optionsService.options.scrollback = 1000;
+  
   configureTerm(term);
   window.onresize = function onResize() {
     term.resizeTerm();
   };
+  
   window.wetty_term = term;
   window.toggleFunctions = toggleFunctions;
   window.toggleCTRL = toggleCTRL;
@@ -232,5 +272,7 @@ export function terminal(socket: Socket): Term | undefined {
   window.pressTAB = pressTAB;
   window.pressLEFT = pressLEFT;
   window.pressRIGHT = pressRIGHT;
+  window.pressENTER = pressENTER;
+  window.pressALT = pressALT;
   return term;
 }

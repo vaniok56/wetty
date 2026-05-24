@@ -1,44 +1,24 @@
----
-version: '3.5'
 services:
-  wetty:
-    image: wettyoss/wetty
+  terminal-cactuz:
     build:
       context: .
-      dockerfile: containers/wetty/Dockerfile
-    entrypoint: pnpm run docker-compose-entrypoint
-    tty: true
-    working_dir: /usr/src/app
+      dockerfile: Dockerfile
+    container_name: terminal-cactuz
+    restart: unless-stopped
+    env_file:
+      - .env
     ports:
-      - '3000:3000'
-    environment:
-      SSHHOST: 'wetty-ssh'
-      SSHPORT: 22
-      NODE_ENV: 'development'
-
-  web:
-    image: nginx
+      - "127.0.0.1:3001:3001"
     volumes:
-      - ./conf/nginx.template:/etc/nginx/conf.d/wetty.template
-    ports:
-      - '80:80'
+      - ./secrets/id_ed25519:/run/terminal-ssh/id_ed25519:ro
+      - ./secrets/known_hosts:/run/terminal-ssh/known_hosts:ro
+
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    container_name: terminal-tunnel
+    restart: unless-stopped
     environment:
-      - NGINX_DOMAIN=wetty.com
-      - NGINX_PORT=80
-      - WETTY_HOST=wetty
-      - WETTY_PORT=3000
-    command: >-
-      /bin/bash -c "envsubst
-      '$${NGINX_DOMAIN},$${NGINX_PORT},$${WETTY_HOST},$${WETTY_PORT}' <
-      /etc/nginx/conf.d/wetty.template > /etc/nginx/conf.d/default.conf && nginx
-      -g 'daemon off;'"
-
-  wetty-ssh:
-    build:
-      context: .
-      dockerfile: containers/ssh/Dockerfile
-    image: wettyoss/wetty:ssh
-
-networks:
-  default:
-    name: wetty
+      - TUNNEL_TOKEN=${TUNNEL_TOKEN}
+    command: tunnel --no-autoupdate run
+    depends_on:
+      - terminal-cactuz

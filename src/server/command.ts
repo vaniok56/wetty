@@ -4,6 +4,7 @@ import _ from 'lodash';
 import { address } from './command/address.js';
 import { loginOptions } from './command/login.js';
 import { sshOptions } from './command/ssh.js';
+import { getTerminalTargetFromReferer, type TerminalTarget } from './targets.js';
 import type { SSH } from '../shared/interfaces';
 import type { Socket } from 'socket.io';
 
@@ -44,12 +45,29 @@ export async function getCommand(
     allowRemoteCommand,
   }: SSH,
   command: string,
-  forcessh: boolean
+  forcessh: boolean,
+  targets: Record<string, TerminalTarget>,
 ): Promise<string[]> {
   const {
     request: { headers: { referer } },
     client: { conn: { remoteAddress } },
   } = socket;
+  const target = getTerminalTargetFromReferer(targets, referer);
+
+  if (target) {
+    return sshOptions(
+      {
+        host: `${target.user}@${target.host}`,
+        port: `${target.port}`,
+        pass: pass || '',
+        command,
+        auth,
+        knownHosts,
+        config: config || '',
+      },
+      key,
+    );
+  }
 
   if (!forcessh && localhost(host)) {
     return loginOptions(command, remoteAddress);

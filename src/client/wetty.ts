@@ -1,5 +1,12 @@
 import { dom, library } from '@fortawesome/fontawesome-svg-core';
-import { faCogs, faKeyboard } from '@fortawesome/free-solid-svg-icons';
+import {
+  faKeyboard,
+  faChevronLeft,
+  faChevronRight,
+  faChevronUp,
+  faChevronDown,
+  faLevelDownAlt,
+} from '@fortawesome/free-solid-svg-icons';
 import _ from 'lodash';
 
 import '../assets/scss/styles.scss';
@@ -14,8 +21,14 @@ import { socket } from './wetty/socket';
 import { terminal, Term } from './wetty/term';
 
 // Setup for fontawesome
-library.add(faCogs);
-library.add(faKeyboard);
+library.add(
+  faKeyboard,
+  faChevronLeft,
+  faChevronRight,
+  faChevronUp,
+  faChevronDown,
+  faLevelDownAlt,
+);
 dom.watch();
 
 function onResize(term: Term): () => void {

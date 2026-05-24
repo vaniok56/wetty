@@ -9,6 +9,7 @@ import { getCommand } from './server/command.js';
 import { gcMetrics } from './server/metrics.js';
 import { server } from './server/socketServer.js';
 import { spawn } from './server/spawn.js';
+import { defaultTerminalTargets } from './server/targets.js';
 import {
   sshDefault,
   serverDefault,
@@ -16,6 +17,7 @@ import {
   defaultCommand,
 } from './shared/defaults.js';
 import { logger as getLogger } from './shared/logger.js';
+import type { TerminalTarget } from './server/targets.js';
 import type { SSH, SSL, Server } from './shared/interfaces.js';
 import type { Express } from 'express';
 import type SocketIO from 'socket.io';
@@ -39,8 +41,9 @@ export const start = (
   command: string = defaultCommand,
   forcessh: boolean = forceSSHDefault,
   ssl: SSL | undefined = undefined,
+  targets: Record<string, TerminalTarget> = defaultTerminalTargets(),
 ): Promise<SocketIO.Server> =>
-  decorateServerWithSsh(express(), ssh, serverConf, command, forcessh, ssl);
+  decorateServerWithSsh(express(), ssh, serverConf, command, forcessh, ssl, targets);
 
 export async function decorateServerWithSsh(
   app: Express,
@@ -49,8 +52,10 @@ export async function decorateServerWithSsh(
   command: string = defaultCommand,
   forcessh: boolean = forceSSHDefault,
   ssl: SSL | undefined = undefined,
+  targets: Record<string, TerminalTarget> = defaultTerminalTargets(),
 ): Promise<SocketIO.Server> {
   const logger = getLogger();
+  app.set('trust proxy', true);
   if (ssh.key) {
     logger.warn(`!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! Password-less auth enabled using private key from ${ssh.key}.
@@ -62,7 +67,7 @@ export async function decorateServerWithSsh(
   collectDefaultMetrics();
   gc().on('stats', gcMetrics);
 
-  const io = await server(app, serverConf, ssl);
+  const io = await server(app, serverConf, ssl, targets);
   /**
    * Wetty server connected too
    * @fires WeTTy#connnection
@@ -76,7 +81,7 @@ export async function decorateServerWithSsh(
     wettyConnections.inc();
 
     try {
-      const args = await getCommand(socket, ssh, command, forcessh);
+      const args = await getCommand(socket, ssh, command, forcessh, targets);
       logger.debug('Command Generated', { cmd: args.join(' ') });
       await spawn(socket, args);
     } catch (error) {

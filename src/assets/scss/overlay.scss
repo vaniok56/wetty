@@ -1,7 +1,8 @@
 @use './variables';
 
 #overlay {
-  background-color: variables.$grey;
+  background:
+    linear-gradient(180deg, rgba(4, 6, 10, 0.92), rgba(8, 12, 18, 0.92));
   display: none;
   height: 100%;
   position: absolute;
@@ -9,20 +10,44 @@
   z-index: 100;
 
   .error {
+    align-items: center;
     display: flex;
     flex-direction: column;
+    gap: 12px;
     height: 100%;
     justify-content: center;
-    width: 100%;
+    margin: 0 auto;
+    max-width: 560px;
+    text-align: center;
+    width: calc(100% - 32px);
 
     #msg {
-      align-self: center;
       color: variables.$white;
+      font-size: 1.1rem;
+      line-height: 1.5;
     }
 
+    #error-toggle,
     input {
-      align-self: center;
-      margin: 16px;
+      background: rgba(138, 180, 255, 0.16);
+      border: 1px solid rgba(138, 180, 255, 0.28);
+      border-radius: 999px;
+      color: variables.$white;
+      cursor: pointer;
+      padding: 10px 16px;
+    }
+
+    #error-details {
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid rgba(147, 162, 180, 0.2);
+      border-radius: 14px;
+      color: variables.$lgrey;
+      max-height: 200px;
+      overflow: auto;
+      padding: 14px;
+      text-align: left;
+      white-space: pre-wrap;
+      width: 100%;
     }
   }
 }

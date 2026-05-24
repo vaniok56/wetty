@@ -1,0 +1,24 @@
+import { isDev } from './env.js';
+export const sshDefault = {
+    user: process.env.SSHUSER || '',
+    host: process.env.SSHHOST || 'localhost',
+    auth: process.env.SSHAUTH || 'password',
+    pass: process.env.SSHPASS || undefined,
+    key: process.env.SSHKEY || undefined,
+    port: parseInt(process.env.SSHPORT || '22', 10),
+    knownHosts: process.env.KNOWNHOSTS || '/dev/null',
+    allowRemoteHosts: false,
+    allowRemoteCommand: false,
+    config: process.env.SSHCONFIG || undefined,
+};
+export const serverDefault = {
+    base: process.env.BASE || '/',
+    port: parseInt(process.env.PORT || '3001', 10),
+    host: '0.0.0.0',
+    socket: false,
+    title: process.env.TITLE || 'terminal.cactuz.icu',
+    allowIframe: process.env.ALLOWIFRAME === 'true' || false,
+};
+export const forceSSHDefault = process.env.FORCESSH === 'true' || false;
+export const defaultCommand = process.env.COMMAND || 'login';
+export const defaultLogLevel = isDev ? 'debug' : 'http';

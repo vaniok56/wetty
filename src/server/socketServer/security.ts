@@ -14,7 +14,8 @@ export const policies =
           fontSrc: ["'self'", 'data:'],
           connectSrc: [
             "'self'",
-            (req.protocol === 'http' ? 'ws://' : 'wss://') + req.get('host'),
+            'ws://' + req.get('host'),
+            'wss://' + req.get('host'),
           ],
         },
       },

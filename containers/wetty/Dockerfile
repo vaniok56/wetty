@@ -33,5 +33,5 @@ COPY package.json /usr/src/app
 RUN apk add -U coreutils openssh-client sshpass && \
     mkdir -p ~/.ssh
 
-EXPOSE 3000
+EXPOSE 3001
 CMD ["pnpm", "start"]

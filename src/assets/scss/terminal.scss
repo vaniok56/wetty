@@ -1,6 +1,7 @@
 #terminal {
   display: flex;
-  height: 100%;
+  flex: 1 1 auto;
   position: relative;
   width: 100%;
+  box-sizing: border-box;
 }

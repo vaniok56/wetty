@@ -15,11 +15,11 @@ export const sshDefault: SSH = {
 };
 
 export const serverDefault: Server = {
-  base: process.env.BASE || '/wetty/',
-  port: parseInt(process.env.PORT || '3000', 10),
+  base: process.env.BASE || '/',
+  port: parseInt(process.env.PORT || '3001', 10),
   host: '0.0.0.0',
   socket: false,
-  title: process.env.TITLE || 'WeTTY - The Web Terminal Emulator',
+  title: process.env.TITLE || 'terminal.cactuz.icu',
   allowIframe: process.env.ALLOWIFRAME === 'true' || false,
 };
 

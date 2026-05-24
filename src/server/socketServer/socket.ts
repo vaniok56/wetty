@@ -36,7 +36,7 @@ export const listen = (
 
   // Create Socket.IO server
   return new Server(server, {
-    path: `${path}/socket.io`,
+    path: '/socket.io',
     pingInterval: 3000,
     pingTimeout: 7000,
   });
