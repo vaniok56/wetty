@@ -1,10 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Create WeTTY server
- * @module WeTTy
- *
- * This is the cli Interface for wetty.
+ * terminal-cactuz CLI entrypoint.
  */
 import { unlinkSync, existsSync, lstatSync } from 'fs';
 import { createRequire } from 'module';
@@ -25,136 +22,60 @@ const opts = yargs(hideBin(process.argv))
     type: 'string',
     description: 'config file to load config from',
   })
-  .option('ssl-key', {
-    type: 'string',
-    description: 'path to SSL key',
-  })
-  .option('ssl-cert', {
-    type: 'string',
-    description: 'path to SSL certificate',
-  })
-  .option('ssh-host', {
-    description: 'ssh server host',
-    type: 'string',
-  })
-  .option('ssh-port', {
-    description: 'ssh server port',
-    type: 'number',
-  })
-  .option('ssh-user', {
-    description: 'ssh user',
-    type: 'string',
-  })
-  .option('title', {
-    description: 'window title',
-    type: 'string',
-  })
+  .option('ssl-key', { type: 'string', description: 'path to SSL key' })
+  .option('ssl-cert', { type: 'string', description: 'path to SSL certificate' })
   .option('ssh-auth', {
-    description:
-      'defaults to "password", you can use "publickey,password" instead',
+    description: 'ssh auth method, e.g. "publickey" or "password"',
     type: 'string',
   })
-  .option('ssh-pass', {
-    description: 'ssh password',
-    type: 'string',
-  })
+  .option('ssh-pass', { description: 'ssh password', type: 'string' })
   .option('ssh-key', {
-    demand: false,
     description:
-      'path to an optional client private key (connection will be password-less and insecure!)',
+      'path to a client private key; anything reaching this server can then run remote commands',
     type: 'string',
   })
   .option('ssh-config', {
-    description:
-      'Specifies an alternative ssh configuration file. For further details see "-F" option in ssh(1)',
+    description: 'alternative ssh configuration file, see "-F" in ssh(1)',
     type: 'string',
-  })
-  .option('force-ssh', {
-    description: 'Connecting through ssh even if running as root',
-    type: 'boolean',
   })
   .option('known-hosts', {
     description: 'path to known hosts file',
     type: 'string',
   })
-  .option('base', {
-    alias: 'b',
-    description: 'base path to wetty',
-    type: 'string',
-  })
-  .option('port', {
-    alias: 'p',
-    description: 'wetty listen port',
-    type: 'number',
-  })
-  .option('host', {
-    description: 'wetty listen host',
-    type: 'string',
-  })
-  .option('socket', {
-    description: 'Make wetty listen on unix socket',
-    type: 'string',
-  })
-  .option('command', {
-    alias: 'c',
-    description: 'command to run in shell',
-    type: 'string',
-  })
+  .option('base', { alias: 'b', description: 'base path', type: 'string' })
+  .option('port', { alias: 'p', description: 'listen port', type: 'number' })
+  .option('host', { description: 'listen host', type: 'string' })
+  .option('socket', { description: 'listen on a unix socket', type: 'string' })
   .option('allow-iframe', {
-    description:
-      'Allow WeTTY to be embedded in an iframe, defaults to allowing same origin',
+    description: 'allow embedding in an iframe, defaults to same origin only',
     type: 'boolean',
   })
-  .option('allow-remote-hosts', {
-    description:
-      'Allow WeTTY to use the `host` and `port` params in a url as ssh destination',
-    type: 'boolean',
-  })
-  .option('allow-remote-command', {
-    description:
-      'Allow WeTTY to use the `command` and `path` params in a url as command and working directory on ssh host',
-    type: 'boolean',
-  })
-  .option('log-level', {
-    description: 'set log level of wetty server',
-    type: 'string',
-  })
-  .option('help', {
-    alias: 'h',
-    type: 'boolean',
-    description: 'Print help message',
-  })
+  .option('log-level', { description: 'log level', type: 'string' })
+  .option('help', { alias: 'h', type: 'boolean' })
   .conflicts('host', 'socket')
   .conflicts('port', 'socket')
-  .boolean('allow_discovery')
   .parseSync();
 
-function cleanup() {
+function cleanup(): void {
   if (opts.socket) {
     const socket = opts.socket.toString();
-    if (existsSync(socket) && lstatSync(socket).isSocket()) {
-      unlinkSync(socket);
-    }
+    if (existsSync(socket) && lstatSync(socket).isSocket()) unlinkSync(socket);
   }
 }
-function exit() {
-  process.exit(1);
-}
 
-if (!opts.help) {
-  process.on('SIGINT', exit);
+if (opts.help) {
+  yargs.showHelp();
+  process.exitCode = 0;
+} else {
   process.on('exit', cleanup);
   loadConfigFile(opts.conf)
-    .then((config) => mergeCliConf(opts, config))
-    .then((conf) => {
+    .then(config => mergeCliConf(opts, config))
+    .then(conf => {
       setLevel(conf.logLevel);
-      start(conf.ssh, conf.server, conf.command, conf.forceSSH, conf.ssl);
+      return start(conf.ssh, conf.server, conf.ssl, conf.session, conf.push);
     })
     .catch((err: Error) => {
       logger().error('error in server', { err });
       process.exitCode = 1;
     });
-} else {
-  yargs.showHelp();
-  process.exitCode = 0;
 }

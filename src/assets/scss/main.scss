@@ -1,0 +1,529 @@
+@use '@xterm/xterm/css/xterm.css';
+@use 'toastify-js/src/toastify.css';
+@use './fonts';
+@use './variables' as v;
+
+/* The `hidden` attribute must always win. Elements like .findbar carry their
+   own `display`, which would otherwise override the UA `[hidden]` rule (equal
+   specificity, author wins) and leave them permanently visible. */
+[hidden] {
+  display: none !important;
+}
+
+/* ─── document ────────────────────────────────────────────────────────────
+   Locked down so the browser can never pan the page. On iOS the keyboard
+   otherwise scrolls the focused element into view and drags the top bar off
+   screen; viewport.ts additionally re-pins with scrollTo(0,0).
+   ------------------------------------------------------------------------ */
+html,
+body {
+  background: v.$bg;
+  color: v.$fg;
+  margin: 0;
+  padding: 0;
+  position: fixed;
+  inset: 0;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+  font-family: v.$mono;
+  -webkit-tap-highlight-color: transparent;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+/* ─── landing ─────────────────────────────────────────────────────────── */
+
+.landing {
+  align-items: center;
+  background: v.$bg;
+  display: flex;
+  height: 100%;
+  justify-content: center;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.landing-panel {
+  background: v.$panel;
+  border: 1px solid v.$border;
+  border-radius: 10px;
+  box-shadow: 0 20px 50px rgb(0 0 0 / 50%);
+  max-width: 640px;
+  width: 100%;
+  overflow: hidden;
+  max-height: calc(100% - 32px);
+  display: flex;
+  flex-direction: column;
+}
+
+.terminal-header {
+  align-items: center;
+  background: #161b22;
+  border-bottom: 1px solid v.$border;
+  display: flex;
+  gap: 8px;
+  padding: 10px 16px;
+  flex: 0 0 auto;
+
+  .dot {
+    border-radius: 50%;
+    height: 12px;
+    width: 12px;
+
+    &.red { background: #ff5f56; }
+    &.yellow { background: #ffbd2e; }
+    &.green { background: #27c93f; }
+  }
+
+  .title {
+    color: v.$muted;
+    font-size: 13px;
+    margin-left: 8px;
+  }
+}
+
+.target-list {
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  overflow-y: auto;
+}
+
+.target-item {
+  align-items: center;
+  border-radius: 6px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px;
+
+  &:active { background: rgb(255 255 255 / 6%); }
+
+  .prompt { color: v.$accent-2; }
+  .command { color: v.$fg; font-weight: 700; }
+  .args { color: v.$accent; flex: 1 1 auto; word-break: break-all; }
+  .meta { color: #6b7684; font-size: 11px; flex: 0 0 100%; }
+}
+
+/* ─── app shell ───────────────────────────────────────────────────────────
+   height comes from --app-height, which viewport.ts keeps equal to
+   visualViewport.height. That is what makes the terminal shrink to sit above
+   the soft keyboard instead of sliding underneath it.
+   ------------------------------------------------------------------------ */
+
+.app {
+  position: fixed;
+  top: var(--app-top, 0);
+  left: 0;
+  right: 0;
+  height: var(--app-height, 100dvh);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+.topbar {
+  align-items: center;
+  background: rgb(13 17 23 / 95%);
+  border-bottom: 1px solid v.$border;
+  display: flex;
+  flex: 0 0 auto;
+  gap: 10px;
+  height: 44px;
+  padding: 0 10px;
+  z-index: 10;
+}
+
+.back-link {
+  align-items: center;
+  color: v.$muted;
+  display: flex;
+  flex: 0 0 auto;
+  gap: 4px;
+  padding: 6px;
+
+  .chev { font-size: 20px; line-height: 1; }
+  .back-text { font-size: 0.85rem; }
+}
+
+.topbar-meta {
+  align-items: center;
+  display: flex;
+  flex: 1 1 auto;
+  gap: 6px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.host-badge {
+  background: rgb(138 180 255 / 16%);
+  border-radius: 999px;
+  color: v.$accent;
+  font-size: 0.78rem;
+  overflow: hidden;
+  padding: 4px 9px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.status {
+  border-radius: 999px;
+  flex: 0 0 auto;
+  font-size: 0.7rem;
+  padding: 4px 8px;
+
+  &[data-state='live'] { background: rgb(124 226 195 / 14%); color: v.$accent-2; }
+  &[data-state='connecting'] { background: rgb(227 179 65 / 14%); color: #e3b341; }
+  &[data-state='reconnecting'] { background: rgb(227 179 65 / 14%); color: #e3b341; }
+  &[data-state='ended'],
+  &[data-state='error'] { background: rgb(255 123 114 / 14%); color: #ff7b72; }
+}
+
+.tabs {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 4px;
+
+  .tab {
+    background: rgb(255 255 255 / 5%);
+    border: 1px solid v.$border;
+    border-radius: 6px;
+    color: v.$muted;
+    height: 30px;
+    position: relative;
+    touch-action: manipulation;
+    width: 30px;
+
+    &[aria-selected='true'] {
+      background: rgb(138 180 255 / 18%);
+      border-color: v.$accent;
+      color: v.$accent;
+    }
+
+    /* a session already exists behind this tab */
+    &[data-live='true']::after {
+      background: v.$accent-2;
+      border-radius: 50%;
+      content: '';
+      height: 4px;
+      position: absolute;
+      right: 3px;
+      top: 3px;
+      width: 4px;
+    }
+  }
+}
+
+/* ─── terminal ────────────────────────────────────────────────────────── */
+
+#terminal-wrap {
+  flex: 1 1 auto;
+  min-height: 0; /* without this a flex item refuses to shrink below content */
+  position: relative;
+  overflow: hidden;
+}
+
+#terminal {
+  position: absolute;
+  inset: 0;
+  padding: 4px 0 0 6px;
+  box-sizing: border-box;
+}
+
+.xterm {
+  height: 100%;
+
+  /* The old build set overflow-y:hidden here, which made 1000 lines of
+     scrollback completely unreachable on a touch device. */
+  .xterm-viewport {
+    overflow-y: auto;
+    scrollbar-width: none;
+    touch-action: pan-y;
+    -webkit-overflow-scrolling: touch;
+
+    &::-webkit-scrollbar { width: 0; height: 0; }
+  }
+}
+
+/* ─── banner + findbar ────────────────────────────────────────────────── */
+
+.banner {
+  background: rgb(227 179 65 / 92%);
+  border-radius: 999px;
+  color: #05070a;
+  font-size: 0.75rem;
+  font-weight: 700;
+  left: 50%;
+  padding: 5px 14px;
+  position: absolute;
+  top: 8px;
+  transform: translateX(-50%);
+  z-index: 30;
+}
+
+.findbar {
+  align-items: center;
+  background: v.$panel;
+  border: 1px solid v.$border;
+  border-radius: 8px;
+  display: flex;
+  gap: 4px;
+  left: 8px;
+  padding: 6px;
+  position: absolute;
+  right: 8px;
+  top: 8px;
+  z-index: 30;
+
+  input {
+    background: rgb(0 0 0 / 40%);
+    border: 1px solid v.$border;
+    border-radius: 6px;
+    color: v.$fg;
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 8px;
+  }
+
+  button {
+    background: rgb(255 255 255 / 6%);
+    border: 1px solid v.$border;
+    border-radius: 6px;
+    color: v.$fg;
+    height: 36px;
+    touch-action: manipulation;
+    width: 36px;
+  }
+}
+
+/* ─── selection handles ("waterdrops") ─────────────────────────────────────
+   Draggable endpoints for adjusting a touch selection. Positioned by touch.ts.
+   ------------------------------------------------------------------------ */
+
+.sel-handle {
+  position: absolute;
+  box-sizing: border-box;
+  width: 20px;
+  height: 20px;
+  background: v.$accent;
+  border: 2px solid #05070a;
+  border-radius: 50%;
+  box-shadow: 0 1px 4px rgb(0 0 0 / 50%);
+  z-index: 25;
+  touch-action: none;
+
+  /* a short stem rising to the exact selection edge */
+  &::before {
+    background: v.$accent;
+    content: '';
+    height: 8px;
+    position: absolute;
+    top: -8px;
+    width: 2px;
+  }
+}
+
+/* Flank the selection: start handle sits just left of its edge, end just right,
+   so neither covers the first/last character and the stem marks the edge. */
+.sel-handle-start {
+  margin-left: -20px;
+
+  &::before {
+    right: 0;
+  }
+}
+
+.sel-handle-end {
+  margin-left: 0;
+
+  &::before {
+    left: 0;
+  }
+}
+
+/* ─── keybar ──────────────────────────────────────────────────────────────
+   Docked directly above the soft keyboard because it is the last flex child
+   of an app whose height tracks the visual viewport.
+   ------------------------------------------------------------------------ */
+
+.keybar {
+  background: #0d1117;
+  border-top: 1px solid v.$border;
+  flex: 0 0 auto;
+  padding-bottom: env(safe-area-inset-bottom);
+  user-select: none;
+  -webkit-user-select: none;
+  z-index: 20;
+}
+
+.keybar-row {
+  &.primary {
+    display: flex;
+    gap: 4px;
+    padding: 6px;
+  }
+
+  &.secondary {
+    border-top: 1px solid #21262d;
+  }
+}
+
+.keybar-scroll {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  padding: 6px;
+  scrollbar-width: none;
+  // Let the browser own horizontal panning; keybar.ts only fires a key on a
+  // tap that didn't turn into a scroll.
+  touch-action: pan-x;
+  overscroll-behavior-x: contain;
+
+  &::-webkit-scrollbar { height: 0; }
+
+  .key {
+    flex: 0 0 auto;
+    min-width: 46px;
+    padding: 0 10px;
+  }
+}
+
+.key {
+  align-items: center;
+  background: rgb(255 255 255 / 6%);
+  border: 1px solid v.$border;
+  border-radius: 6px;
+  color: #c9d1d9;
+  display: flex;
+  flex: 1 1 0;
+  font-family: v.$mono;
+  font-size: 12px;
+  font-weight: 700;
+  height: 42px;
+  justify-content: center;
+  min-width: 0;
+  touch-action: manipulation;
+  white-space: nowrap;
+
+  &:active {
+    background: v.$accent;
+    border-color: v.$accent;
+    color: #000;
+  }
+
+  &.arrow { font-size: 16px; }
+  &.expand { flex: 0 0 40px; font-size: 16px; }
+  &.ctrlkey { color: v.$accent-2; }
+  &.fkey { color: v.$muted; }
+  &.tool { color: v.$accent; }
+  &.danger { color: #ff7b72; }
+
+  /* First tap of a destructive key arms it; a second tap within a few
+     seconds commits. */
+  &.confirming {
+    background: #ff7b72;
+    border-color: #ff7b72;
+    color: #000;
+    animation: cactuz-pulse 1s ease-in-out infinite;
+  }
+
+  /* Sticky modifier states: armed applies to the next key, locked persists. */
+  &.mod {
+    &[data-state='armed'] {
+      border-color: v.$accent;
+      box-shadow: inset 0 0 0 1px v.$accent;
+      color: v.$accent;
+    }
+
+    &[data-state='locked'] {
+      background: v.$accent;
+      border-color: v.$accent;
+      color: #000;
+    }
+  }
+}
+
+@keyframes cactuz-pulse {
+  50% {
+    opacity: 0.6;
+  }
+}
+
+/* ─── overlay ─────────────────────────────────────────────────────────── */
+
+#overlay {
+  background: linear-gradient(180deg, rgb(4 6 10 / 94%), rgb(8 12 18 / 94%));
+  display: none;
+  inset: 0;
+  position: absolute;
+  z-index: 100;
+
+  .error {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    height: 100%;
+    justify-content: center;
+    margin: 0 auto;
+    max-width: 560px;
+    padding: 0 16px;
+    text-align: center;
+  }
+
+  #msg {
+    color: v.$fg;
+    font-size: 1.05rem;
+    line-height: 1.5;
+  }
+
+  #error-details {
+    background: rgb(0 0 0 / 40%);
+    border: 1px solid v.$border;
+    border-radius: 10px;
+    color: #b6c2cf;
+    font-size: 0.75rem;
+    max-height: 180px;
+    overflow: auto;
+    padding: 12px;
+    text-align: left;
+    white-space: pre-wrap;
+    width: 100%;
+  }
+}
+
+.overlay-actions {
+  display: flex;
+  gap: 10px;
+}
+
+#error-toggle,
+#overlay-retry,
+.overlay-link {
+  background: rgb(138 180 255 / 16%);
+  border: 1px solid rgb(138 180 255 / 28%);
+  border-radius: 999px;
+  color: v.$fg;
+  padding: 10px 18px;
+}
+
+.toastify {
+  border: 1px solid v.$border;
+  border-radius: 8px;
+  color: v.$fg;
+  font-size: 0.8rem;
+}

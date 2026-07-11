@@ -1,0 +1,28 @@
+// The ONLY place machines are defined. No hardcoded fallback exists.
+// Invalid config stops the app on boot — check logs for the exact error.
+//
+// To add a machine:
+//   1. Append an entry below.
+//   2. Run: ssh-keyscan -p <port> <host> >> ./secrets/known_hosts
+//   3. Add app public key to <user>@<host>:~/.ssh/authorized_keys
+//   4. docker compose restart terminal-cactuz   (no rebuild needed)
+//
+// Schema per entry:
+//   slug  — required; ^[a-z0-9][a-z0-9-]*$; unique; not: client, metrics, ssh, favicon.ico
+//   name  — required; display string shown on the home page
+//   host  — required; IP address or hostname
+//   user  — required; SSH login username
+//   port  — optional; integer 1–65535; default 22
+//   tmux  — optional; boolean; default true
+//
+// About tmux: each tab attaches to a tmux session named cactuz-<slug>-<tab>,
+// created on first use. That is what lets a session survive this server
+// restarting or the network dropping. If tmux is not installed on the host we
+// fall back to a plain login shell — you still get reconnect and snapshot
+// replay, just not survival across a container restart. Set tmux: false to opt
+// out. To inspect from the host itself: `tmux ls`.
+[
+  { slug: 'raspik4b', name: 'raspik4b', host: '192.168.100.105', user: 'raspik4b', port: 22 },
+  { slug: 'raspik',   name: 'raspik',   host: '192.168.100.51',  user: 'vaniok56', port: 22 },
+  { slug: 'reactor',  name: 'Reactor',  host: '192.168.100.129', user: 'vaniok56', port: 22 },
+]

@@ -12,6 +12,7 @@ services:
     volumes:
       - ./secrets/id_ed25519:/run/terminal-ssh/id_ed25519:ro
       - ./secrets/known_hosts:/run/terminal-ssh/known_hosts:ro
+      - ./conf/targets.json5:/run/terminal-targets.json5:ro
 
   tunnel:
     image: cloudflare/cloudflared:latest

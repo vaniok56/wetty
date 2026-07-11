@@ -2,13 +2,8 @@ import type winston from 'winston';
 
 export interface SSH {
   [s: string]: string | number | boolean | undefined;
-  user: string;
-  host: string;
   auth: string;
-  port: number;
   knownHosts: string;
-  allowRemoteHosts: boolean;
-  allowRemoteCommand: boolean;
   pass?: string;
   key?: string;
   config?: string;
@@ -34,11 +29,34 @@ export interface Server {
   allowIframe: boolean;
 }
 
+/**
+ * Terminal sessions outlive the socket that created them, so these bound how
+ * long an unattached session survives and how much of it we replay on reattach.
+ */
+export interface SessionConf {
+  /** Keep a PTY alive this long after the last client detaches. */
+  graceMs: number;
+  /** Rows retained by the server-side headless terminal. Drives memory use. */
+  scrollback: number;
+  /** Rows of scrollback replayed into a reattaching client. */
+  snapshotScrollback: number;
+  /** Concurrent tabs per (identity, target). */
+  maxTabs: number;
+  /** Hard cap on live sessions across the whole server. */
+  maxSessions: number;
+}
+
+export interface PushConf {
+  publicKey?: string;
+  privateKey?: string;
+  subject: string;
+}
+
 export interface Config {
   ssh: SSH;
   server: Server;
-  forceSSH: boolean;
-  command: string;
   logLevel: typeof winston.level;
   ssl?: SSL;
+  session: SessionConf;
+  push: PushConf;
 }

@@ -1,4 +1,0 @@
-import serve from 'serve-static';
-import { assetsPath } from './shared/path.js';
-export const trim = (str) => str.replace(/\/*$/, '');
-export const serveStatic = (path) => serve(assetsPath(path), { etag: false, lastModified: false, cacheControl: false });

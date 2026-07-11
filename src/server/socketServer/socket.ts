@@ -13,14 +13,13 @@ export const listen = (
   port: number,
   path: string,
   { key, cert }: SSLBuffer,
-  socket?: string | boolean
-): Server =>{
-  // Create the base HTTP/HTTPS server
-  const server = !isUndefined(key) && !isUndefined(cert)
+  socket?: string | boolean,
+): Server => {
+  const secure = !isUndefined(key) && !isUndefined(cert);
+  const server = secure
     ? https.createServer({ key, cert }, app)
     : http.createServer(app);
 
-  // Start listening on either Unix socket or TCP
   if (socket) {
     server.listen(socket, () => {
       logger().info('Server listening on Unix socket', { socket });
@@ -29,15 +28,24 @@ export const listen = (
     server.listen(port, host, () => {
       logger().info('Server started', {
         port,
-        connection: !isUndefined(key) && !isUndefined(cert) ? 'https' : 'http',
+        connection: secure ? 'https' : 'http',
       });
     });
   }
 
-  // Create Socket.IO server
   return new Server(server, {
-    path: '/socket.io',
-    pingInterval: 3000,
-    pingTimeout: 7000,
+    // Previously hardcoded to '/socket.io', which broke any non-root BASE.
+    path: `${path}/socket.io`,
+    // The old 3s/7s pair declared a phone dead seven seconds after Chrome
+    // froze the tab. Sessions now survive that, but there is still no reason
+    // to tear the socket down so eagerly. These are socket.io's defaults.
+    pingInterval: 25_000,
+    pingTimeout: 20_000,
+    // Reattach snapshots are a single large frame; compress them.
+    perMessageDeflate: { threshold: 1024 },
+    maxHttpBufferSize: 8e6,
+    // Deliberately NOT using connectionStateRecovery: it is best-effort, capped
+    // at ~2 minutes, and would replay buffered packets on top of the snapshot
+    // we already send on reattach. Our own attach protocol is authoritative.
   });
-}
+};

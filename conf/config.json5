@@ -1,26 +1,27 @@
+// Optional. The Docker image runs without a config file and takes everything
+// from the environment (see .env.example). Pass --conf conf/config.json5 to use
+// this instead. Machines are always defined in conf/targets.json5, never here.
 {
   ssh: {
-    // user:    'username',                     // default user to use when ssh-ing
-    host:       'localhost',                    // Server to ssh to
-    auth:       'password',                     // shh authentication, method. Defaults to "password", you can use "publickey,password" instead'
-    // pass:    "password",                     // Password to use when sshing
-    // key:     "",                             // path to an optional client private key, connection will be password-less and insecure!
-    port:       22,                             // Port to ssh to
-    knownHosts: '/dev/null',                    // ssh knownHosts file to use
-    // config:  '/home/user/.wetty_ssh_config', // alternative ssh configuration file, see "-F" option in ssh(1)
-  },
-  server:  {
-    base:         '/wetty/',                           // URL base to serve resources from
-    port:         3001,                                // Port to listen on
-    host:         '0.0.0.0',                           // address to listen on
-    title:        'WeTTY - The Web Terminal Emulator', // Page title
-    bypassHelmet: false,                               // Disable Helmet security checks
+    auth:       'publickey',   // 'publickey' or 'password'
+    // pass:    'password',    // only with auth: 'password'; requires sshpass
+    // key:     '',            // client private key; password-less and unauthenticated
+    knownHosts: '/dev/null',   // a real path enables StrictHostKeyChecking=accept-new
+    // config:  '/home/user/.ssh/config',  // see "-F" in ssh(1)
   },
 
-  forceSSH: false,  // Force sshing to local machine over login if running as root
-  command: 'login', // Command to run on server. Login will use ssh if connecting to different server
+  server: {
+    base:  '/',                  // URL base to serve from
+    port:  3001,
+    host:  '0.0.0.0',
+    title: 'terminal.cactuz.icu',
+    allowIframe: false,          // false pins X-Frame-Options to sameorigin
+  },
+
+  // Session lifetime and push are environment-only; see .env.example.
+
   /*
-  ssl:{
+  ssl: {
     key: 'ssl.key',
     cert: 'ssl.cert',
   }
