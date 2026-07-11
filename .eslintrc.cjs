@@ -2,7 +2,7 @@ module.exports = {
   extends: ['airbnb-base', 'prettier', 'plugin:@typescript-eslint/recommended'],
   parser: '@typescript-eslint/parser',
   plugins: ['@typescript-eslint', 'prettier'],
-  ignorePatterns: ['dist'],
+  ignorePatterns: ['dist', 'build', '.attic'],
   root: true,
   env: {
     node: true,
@@ -49,7 +49,6 @@ module.exports = {
       },
     ],
     'import/prefer-default-export': 'off',
-    'import/prefer-default-export': 'off',
     'linebreak-style': ['error', 'unix'],
     'lines-between-class-members': [
       'error',
@@ -58,6 +57,30 @@ module.exports = {
     ],
     'no-param-reassign': ['error', { props: false }],
     'no-use-before-define': ['error', { functions: false }],
+
+    // airbnb-base predates ES2015 iteration and TypeScript. Keep the bans that
+    // still matter (for-in, labels, with) and drop the one on for-of, which is
+    // the natural way to walk a Map or a Set.
+    'no-restricted-syntax': [
+      'error',
+      {
+        selector: 'ForInStatement',
+        message:
+          'Use Object.{keys,values,entries} and iterate over the result instead.',
+      },
+      { selector: 'LabeledStatement', message: 'Labels are a form of GOTO.' },
+      { selector: 'WithStatement', message: '`with` is disallowed.' },
+    ],
+    'no-plusplus': ['error', { allowForLoopAfterthoughts: true }],
+    'no-continue': 'off',
+
+    // `void promise` is the conventional way to say "deliberately not awaited",
+    // which is exactly what @typescript-eslint/no-floating-promises asks for.
+    'no-void': ['error', { allowAsStatement: true }],
+
+    // The base rule flags TypeScript parameter properties as useless.
+    'no-useless-constructor': 'off',
+    '@typescript-eslint/no-useless-constructor': 'error',
   },
   settings: {
     // Apply special parsing for TypeScript files
@@ -82,12 +105,26 @@ module.exports = {
       },
     },
     {
+      // A service worker has its own global scope: `self`, `clients`, no DOM.
+      files: ['src/assets/sw.js'],
+      env: { worker: true, serviceworker: true, browser: false, node: false },
+      rules: {
+        'no-restricted-globals': 'off',
+        'no-console': 'off',
+      },
+    },
+    {
       files: ['*.spec.*', '*.test.*'],
       extends: ['plugin:mocha/recommended'],
       plugins: ['mocha'],
       rules: {
         'import/no-extraneous-dependencies': ['off'],
         'mocha/no-mocha-arrows': ['off'],
+        // Several suites per file is fine, and `this.timeout()` requires a
+        // non-arrow function, which trips func-names.
+        'mocha/max-top-level-suites': ['off'],
+        'mocha/no-setup-in-describe': ['off'],
+        'func-names': ['off'],
         'no-unused-expressions': ['off'],
       },
     },
