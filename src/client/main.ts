@@ -198,5 +198,26 @@ initOverlay(() => session.retry());
 initLifecycle(session);
 initPwa(pageConfig.base);
 
-reflow();
+// xterm measures character width via `measureText('W')`, which uses the
+// WOFF2 fallback metrics if JetBrains Mono has not finished loading yet.
+// That gives `Viewport._currentRowHeight` the wrong value on first paint:
+// every wheel notch is computed against the fallback cell height, the
+// `_handleScroll` math returns NaN, and the terminal refuses to scroll
+// until a layout flush (e.g. expanding the keybar) triggers a fresh
+// measurement. Wait for the document fonts to settle, then fit.
+const initialFit = (): void => {
+  const fonts = (document as Document & {
+    fonts?: { ready?: Promise<unknown>; addEventListener?: (t: string, h: EventListener) => void };
+  }).fonts;
+  if (fonts?.ready && typeof fonts.ready.then === 'function') {
+    fonts.ready
+      .catch(() => undefined)
+      .then(() => reflow());
+    // Re-fit on any future font change (e.g. lazy-loaded extra weight).
+    fonts.addEventListener?.('loadingdone', () => reflow());
+  } else {
+    reflow();
+  }
+};
+initialFit();
 term.focus();
