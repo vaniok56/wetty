@@ -14,7 +14,7 @@ updates:
     commit-message:
       prefix: '[GH action] '
   - package-ecosystem: docker
-    directory: '/containers'
+    directory: '/'
     schedule:
       interval: weekly
     commit-message:
