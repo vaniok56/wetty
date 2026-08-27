@@ -30,7 +30,8 @@ jobs:
           tags: terminal-cactuz:test
       - name: Spawn PTY in production image
         run: >-
-          docker run --rm --platform '${{ inputs.platform }}' terminal-cactuz:test
-          node -e "const p=require('node-pty');const x=p.spawn('/bin/sh',['-c','exit 0'],
+          docker run --rm --platform '${{ inputs.platform }}'
+          terminal-cactuz:test node -e "const p=require('node-pty');const
+          x=p.spawn('/bin/sh',['-c','exit 0'],
           {name:'xterm-256color',cols:80,rows:24,cwd:'/app',env:process.env});
           x.onExit(({exitCode})=>process.exit(exitCode));x.resize(100,30)"
