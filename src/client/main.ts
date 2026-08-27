@@ -206,9 +206,9 @@ initPwa(pageConfig.base);
 // until a layout flush (e.g. expanding the keybar) triggers a fresh
 // measurement. Wait for the document fonts to settle, then fit.
 const initialFit = (): void => {
-  const fonts = (document as Document & {
+  const { fonts } = document as Document & {
     fonts?: { ready?: Promise<unknown>; addEventListener?: (t: string, h: EventListener) => void };
-  }).fonts;
+  };
   if (fonts?.ready && typeof fonts.ready.then === 'function') {
     fonts.ready
       .catch(() => undefined)

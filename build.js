@@ -1,7 +1,10 @@
 import {spawn} from 'node:child_process';
+import {fileURLToPath} from 'node:url';
 import * as esbuild from 'esbuild';
 import {copy} from 'esbuild-plugin-copy';
 import {sassPlugin} from 'esbuild-sass-plugin';
+
+const tsc = fileURLToPath(new URL('node_modules/typescript/bin/tsc', import.meta.url));
 
 /** @param {string} prog
  * @param {string[]} [args=[]]
@@ -27,7 +30,7 @@ const typechecker = (watching) => ({
     name: 'typechecker',
     setup(build) {
         build.onStart(async () => {
-            const [, tscDone] = cmd('pnpm', ['tsc', '-p', 'tsconfig.browser.json']);
+            const [, tscDone] = cmd(process.execPath, [tsc, '-p', 'tsconfig.browser.json']);
             const { ret } = await tscDone;
             if (ret === 0) return {};
             const message = { text: `Type checking failed: tsc exited with code ${ret}` };
@@ -81,9 +84,9 @@ async function buildClient(watching) {
 
 /** @param {boolean} watching */
 async function buildServer(watching) {
-    const tscArgs = ['tsc', '-p', 'tsconfig.node.json'];
+    const tscArgs = [tsc, '-p', 'tsconfig.node.json'];
     if (watching) tscArgs.push('--watch', '--preserveWatchOutput');
-    const [, tscDone] = cmd('pnpm', tscArgs);
+    const [, tscDone] = cmd(process.execPath, tscArgs);
     if (watching) return;
     const { ret } = await tscDone;
     if (ret !== 0) throw new Error(`Server build failed: tsc exited with code ${ret}`);
