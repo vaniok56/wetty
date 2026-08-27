@@ -127,7 +127,6 @@ const setFontSize = (size: number): void => {
 
 const searchControl = initSearch(
   search,
-  term,
   () => !coarsePointer || keyboardOpen,
   () => term.focus(),
 );

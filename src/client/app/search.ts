@@ -1,6 +1,5 @@
 import { dom } from './dom';
 import type { SearchAddon } from '@xterm/addon-search';
-import type { Terminal } from '@xterm/xterm';
 
 const OPTIONS = {
   decorations: {
@@ -18,22 +17,14 @@ export interface SearchControl {
 
 export function initSearch(
   search: SearchAddon,
-  terminal: Terminal,
   keyboardShouldStayOpen: () => boolean,
   refocusTerminal: () => void,
 ): SearchControl {
   const find = (forward: boolean): void => {
     const term = dom.findInput.value;
     if (!term) return;
-    const found = forward
-      ? search.findNext(term, OPTIONS)
-      : search.findPrevious(term, OPTIONS);
-    const selection = terminal.getSelectionPosition();
-    if (found && selection) {
-      terminal.scrollToLine(
-        Math.max(0, selection.start.y - Math.floor(terminal.rows / 2)),
-      );
-    }
+    if (forward) search.findNext(term, OPTIONS);
+    else search.findPrevious(term, OPTIONS);
   };
 
   const close = (): void => {
