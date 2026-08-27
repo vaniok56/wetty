@@ -76,9 +76,9 @@ export function sshArgs(
   tab: number,
   fresh = false,
 ): string[] {
-  // `accept-new` trusts unseen hosts once; with /dev/null there is nothing to
-  // remember, so checking would reject every connection.
-  const hostChecking = knownHosts !== '/dev/null' ? 'accept-new' : 'no';
+  // Strict checking requires preloaded keys; /dev/null cannot retain keys, so
+  // checking there would reject every connection.
+  const hostChecking = knownHosts !== '/dev/null' ? 'yes' : 'no';
   const cmd = remoteCommand(target, tab, fresh);
 
   logger().debug('Building ssh command', { slug: target.slug, tab, auth });

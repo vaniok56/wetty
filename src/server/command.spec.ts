@@ -91,9 +91,9 @@ describe('sshArgs', () => {
     expect(sshArgs(target, ssh, 0).join(' ')).to.contain('EscapeChar=none');
   });
 
-  it('verifies host keys when a known_hosts file is configured', () => {
+  it('requires preloaded keys when a known_hosts file is configured', () => {
     const args = sshArgs(target, ssh, 0).join(' ');
-    expect(args).to.contain('StrictHostKeyChecking=accept-new');
+    expect(args).to.contain('StrictHostKeyChecking=yes');
     expect(args).to.contain('UserKnownHostsFile=/run/known_hosts');
   });
 

@@ -31,9 +31,20 @@ export function redirect(
   res: Response,
   next: NextFunction,
 ): void {
-  if (req.path.substr(-1) === '/' && req.path.length > 1)
-    res.redirect(301, req.path.slice(0, -1) + req.url.slice(req.path.length));
-  else next();
+  if (req.path.substr(-1) === '/' && req.path.length > 1) {
+    const target = req.path.slice(0, -1) + req.url.slice(req.path.length);
+
+    try {
+      const url = new URL(target, 'http://localhost');
+      if (target.startsWith('//') || url.origin !== 'http://localhost') {
+        res.sendStatus(400);
+      } else {
+        res.redirect(301, target);
+      }
+    } catch {
+      res.sendStatus(400);
+    }
+  } else next();
 }
 
 /**

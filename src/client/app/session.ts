@@ -23,7 +23,7 @@ export interface SessionHooks {
   onExit: (exitCode: number) => void;
 }
 
-const trim = (str: string): string => str.replace(/\/*$/, '');
+const trim = (str: string): string => str.replace(/\/+$/, '');
 
 export class Session {
   readonly socket: Socket;

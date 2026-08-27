@@ -6,7 +6,7 @@
     auth:       'publickey',   // 'publickey' or 'password'
     // pass:    'password',    // only with auth: 'password'; requires sshpass
     // key:     '',            // client private key; password-less and unauthenticated
-    knownHosts: '/dev/null',   // a real path enables StrictHostKeyChecking=accept-new
+    knownHosts: '/dev/null',   // a real path requires every host key to be preloaded
     // config:  '/home/user/.ssh/config',  // see "-F" in ssh(1)
   },
 
