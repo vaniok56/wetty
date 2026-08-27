@@ -15,21 +15,6 @@
  * contenteditable — which made the browser scroll that tall element into view
  * and drag the whole page up past the top bar.
  */
-/**
- * Tallest visual viewport seen in the current orientation — i.e. the height with
- * no keyboard. The soft keyboard shrinks the viewport by far more than the URL
- * bar does, so a big drop below this baseline means the keyboard is up.
- */
-let maxViewportHeight = 0;
-const KEYBOARD_MIN_PX = 150;
-
-/** Best-effort: is the soft keyboard currently covering part of the screen? */
-export function isKeyboardOpen(): boolean {
-  const vv = window.visualViewport;
-  if (!vv || maxViewportHeight === 0) return false;
-  return maxViewportHeight - vv.height > KEYBOARD_MIN_PX;
-}
-
 export function initViewport(onResize: () => void): void {
   const root = document.documentElement;
   const vv = window.visualViewport;
@@ -38,7 +23,6 @@ export function initViewport(onResize: () => void): void {
   const sync = (): void => {
     const height = vv?.height ?? window.innerHeight;
     const top = vv?.offsetTop ?? 0;
-    if (height > maxViewportHeight) maxViewportHeight = height;
     root.style.setProperty('--app-height', `${Math.round(height)}px`);
     root.style.setProperty('--app-top', `${Math.round(top)}px`);
 
@@ -55,10 +39,8 @@ export function initViewport(onResize: () => void): void {
   vv?.addEventListener('resize', sync);
   vv?.addEventListener('scroll', sync);
   window.addEventListener('resize', sync);
-  // Orientation changes report the old size for a frame or two; the baseline
-  // must be recaptured for the new orientation.
+  // Orientation changes report the old size for a frame or two.
   window.addEventListener('orientationchange', () => {
-    maxViewportHeight = 0;
     setTimeout(sync, 150);
   });
   // iOS 26 leaves a residual offsetTop behind after the keyboard dismisses;

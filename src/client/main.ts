@@ -25,7 +25,7 @@ import {
   setStatus,
   showOverlay,
 } from './app/ui';
-import { initViewport, isKeyboardOpen } from './app/viewport';
+import { initViewport } from './app/viewport';
 
 const settings = loadSettings();
 const { term, search, fit } = createTerminal(dom.terminal);
@@ -151,12 +151,8 @@ const mods = initKeybar(
     scrollTop: () => term.scrollToTop(),
     restart: () => session.restart(),
     kill: () => session.kill(),
-    // A utility tap must not change the keyboard's state. If it's open, keep
-    // focus so it stays open; if it's closed, blur so a still-focused textarea
-    // can't have Android re-summon it. That makes ⋯ and the tools truly neutral.
-    releaseKeyboard: () => {
-      if (!isKeyboardOpen()) term.blur();
-    },
+    // Utility controls must never summon the soft keyboard.
+    releaseKeyboard: () => term.blur(),
   },
   expanded => {
     settings.keybarExpanded = expanded;
