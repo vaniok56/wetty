@@ -9,7 +9,7 @@ RUN pnpm install --frozen-lockfile
 
 COPY src ./src
 RUN pnpm run build
-RUN pnpm prune --prod
+RUN pnpm prune --prod --ignore-scripts
 
 FROM node:22-alpine AS runtime
 RUN apk add --no-cache openssh-client
