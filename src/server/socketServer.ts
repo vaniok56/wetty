@@ -44,6 +44,7 @@ export async function server(
       winstonInstance: logger(),
       expressFormat: true,
       level: 'http',
+      requestWhitelist: ['url', 'method', 'httpVersion', 'originalUrl', 'query'],
     }),
   );
 

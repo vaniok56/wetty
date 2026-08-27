@@ -6,7 +6,9 @@ import { tmpdir } from 'os';
 import { join } from 'path';
 import { expect } from 'chai';
 import express from 'express';
+import * as sinon from 'sinon';
 
+import { logger } from '../shared/logger';
 import { PushService } from './push';
 import { server } from './socketServer';
 import type { TerminalTarget } from './targets';
@@ -35,6 +37,7 @@ describe('HTTP server', () => {
     path: string,
     method = 'GET',
     body = '',
+    headers: http.OutgoingHttpHeaders = {},
   ): Promise<TestResponse> =>
     new Promise((resolve, reject) => {
       const req = http.request(
@@ -42,12 +45,15 @@ describe('HTTP server', () => {
           socketPath,
           path,
           method,
-          headers: body
-            ? {
-                'content-type': 'application/json',
-                'content-length': Buffer.byteLength(body),
-              }
-            : undefined,
+          headers: {
+            ...(body
+              ? {
+                  'content-type': 'application/json',
+                  'content-length': Buffer.byteLength(body),
+                }
+              : {}),
+            ...headers,
+          },
         },
         res => {
           const chunks: Buffer[] = [];
@@ -125,6 +131,20 @@ describe('HTTP server', () => {
       'http_request_duration_seconds',
     ]) {
       expect(response.body).to.contain(name);
+    }
+  });
+
+  it('does not log request credentials', async () => {
+    const log = sinon.stub(logger(), 'log');
+
+    try {
+      await request('/wetty', 'GET', '', {
+        cookie: 'session=test-secret',
+        'cf-access-jwt-assertion': 'test-secret',
+      });
+      expect(JSON.stringify(log.args)).to.not.contain('test-secret');
+    } finally {
+      log.restore();
     }
   });
 
