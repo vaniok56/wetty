@@ -32,14 +32,12 @@ export function redirect(
   next: NextFunction,
 ): void {
   if (req.path.substr(-1) === '/' && req.path.length > 1) {
-    const target = req.path.slice(0, -1) + req.url.slice(req.path.length);
-
     try {
-      const url = new URL(target, 'http://localhost');
-      if (target.startsWith('//') || url.origin !== 'http://localhost') {
+      const url = new URL(req.url, 'http://localhost');
+      if (url.origin !== 'http://localhost') {
         res.sendStatus(400);
       } else {
-        res.redirect(301, target);
+        res.redirect(301, `${url.pathname.slice(0, -1)}${url.search}`);
       }
     } catch {
       res.sendStatus(400);

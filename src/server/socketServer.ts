@@ -23,10 +23,15 @@ export async function server(
   targets: Record<string, TerminalTarget>,
   push: PushService,
 ): Promise<SocketIO.Server> {
-  if (!/^\/(?:[A-Za-z0-9._~-]+\/?)*$/.test(base)) {
+  const basePath = base.endsWith('/') ? base.slice(0, -1) : base;
+  const validSegment = /^[A-Za-z0-9._~-]+$/;
+  if (
+    basePath !== '' &&
+    (!basePath.startsWith('/') ||
+      basePath.slice(1).split('/').some((segment) => !validSegment.test(segment)))
+  ) {
     throw new Error(`Invalid server base path: ${base}`);
   }
-  const basePath = base.replace(/\/+$/, '') || '';
   const rootPath = basePath || '/';
   logger().info('Starting server', { ssl: Boolean(ssl), port, basePath, title });
 
