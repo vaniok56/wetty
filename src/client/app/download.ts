@@ -1,12 +1,12 @@
-import fileType from 'file-type';
+import { fileTypeFromBuffer } from 'file-type';
 import Toastify from 'toastify-js';
 
 const DEFAULT_FILE_BEGIN = '\u001b[5i';
 const DEFAULT_FILE_END = '\u001b[4i';
 
-type OnCompleteFile = (bufferCharacters: string) => void;
+type OnCompleteFile = (bufferCharacters: string) => void | Promise<void>;
 
-function onCompleteFile(bufferCharacters: string): void {
+async function onCompleteFile(bufferCharacters: string): Promise<void> {
   let fileNameBase64;
   let fileCharacters = bufferCharacters;
   if (bufferCharacters.includes(":")) {
@@ -26,7 +26,7 @@ function onCompleteFile(bufferCharacters: string): void {
 
   let mimeType = 'application/octet-stream';
   let fileExt = '';
-  const typeData = fileType(bytes);
+  const typeData = await fileTypeFromBuffer(bytes);
   if (typeData) {
     mimeType = typeData.mime;
     fileExt = typeData.ext;
@@ -61,15 +61,24 @@ function onCompleteFile(bufferCharacters: string): void {
   });
   const blobUrl = URL.createObjectURL(blob);
 
+  const link = document.createElement('a');
+  link.href = blobUrl;
+  link.target = '_blank';
+  link.download = fileName;
+  link.rel = 'noopener';
+  link.textContent = fileName;
+
+  const node = document.createElement('div');
+  node.append('Download ready: ', link);
+
   Toastify({
-    text: `Download ready: <a href="${blobUrl}" target="_blank" download="${fileName}">${fileName}</a>`,
+    node,
     duration: 10000,
     newWindow: true,
     gravity: 'bottom',
     position: 'right',
-    backgroundColor: '#fff',
+    style: { background: '#fff' },
     stopOnFocus: true,
-    escapeMarkup: false,
   }).showToast();
 }
 
@@ -140,7 +149,7 @@ export class FileDownloader {
       this.fileBuffer.length >= this.fileBegin.length + this.fileEnd.length &&
       this.fileBuffer.slice(-this.fileEnd.length).join('') === this.fileEnd
     ) {
-      this.onCompleteFileCallback(
+      void this.onCompleteFileCallback(
         this.fileBuffer
           .slice(
             this.fileBegin.length,

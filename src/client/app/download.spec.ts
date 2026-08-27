@@ -14,12 +14,66 @@ describe('FileDownloader', () => {
 
   beforeEach(() => {
     const { window } = new JSDOM(`...`);
+    global.window = window as unknown as Window & typeof globalThis;
     global.document = window.document;
+    global.Node = window.Node;
+    global.HTMLElement = window.HTMLElement;
     fileDownloader = new FileDownloader(noop, FILE_BEGIN, FILE_END);
   });
 
   afterEach(() => {
     sinon.restore();
+  });
+
+  it('should render a terminal-controlled filename as text', async () => {
+    const clock = sinon.useFakeTimers();
+    sinon.stub(URL, 'createObjectURL').returns('blob:test');
+    const fileName = '<img src=x onerror=alert(1)>';
+    const data = `${window.btoa(fileName)}:${window.btoa('file')}`;
+
+    new FileDownloader().buffer(`\u001b[5i${data}\u001b[4i`);
+    await clock.tickAsync(0);
+
+    const link = document.querySelector('a');
+    expect(link?.textContent).to.equal(fileName);
+    expect(link?.getAttribute('download')).to.equal(fileName);
+    expect(link?.getAttribute('rel')).to.equal('noopener');
+    expect(document.querySelector('img')).to.equal(null);
+  });
+
+  it('does not delay terminal output while file detection completes', async () => {
+    let completed = '';
+    let finish!: () => void;
+    const done = new Promise<void>(resolve => {
+      finish = resolve;
+    });
+    const downloader = new FileDownloader(async data => {
+      await Promise.resolve();
+      completed = data;
+      finish();
+    }, FILE_BEGIN, FILE_END);
+
+    expect(downloader.buffer(`left${FILE_BEGIN}file${FILE_END}right`)).to.equal(
+      'leftright',
+    );
+    await done;
+    expect(completed).to.equal('file');
+  });
+
+  it('detects a PNG download', async () => {
+    const clock = sinon.useFakeTimers();
+    let blob: Blob | undefined;
+    sinon.stub(URL, 'createObjectURL').callsFake(value => {
+      blob = value as Blob;
+      return 'blob:test';
+    });
+    const png =
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=';
+
+    new FileDownloader().buffer(`\u001b[5i${png}\u001b[4i`);
+    await clock.tickAsync(0);
+
+    expect(blob?.type).to.equal('image/png');
   });
 
   it('should return data before file markers', () => {

@@ -23,6 +23,9 @@ export async function server(
   targets: Record<string, TerminalTarget>,
   push: PushService,
 ): Promise<SocketIO.Server> {
+  if (!/^\/(?:[A-Za-z0-9._~-]+\/?)*$/.test(base)) {
+    throw new Error(`Invalid server base path: ${base}`);
+  }
   const basePath = base.replace(/\/+$/, '') || '';
   const rootPath = basePath || '/';
   logger().info('Starting server', { ssl: Boolean(ssl), port, basePath, title });

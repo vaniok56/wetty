@@ -36,6 +36,9 @@ const THEME = {
   brightMagenta: '#e0bbff',
   brightCyan: '#9ceff5',
   brightWhite: '#f0f6fc',
+  scrollbarSliderBackground: 'transparent',
+  scrollbarSliderHoverBackground: 'transparent',
+  scrollbarSliderActiveBackground: 'transparent',
 };
 
 export function createTerminal(container: HTMLElement): TerminalHandle {

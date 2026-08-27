@@ -15,7 +15,7 @@ import {
   pushDefault,
 } from './shared/defaults.js';
 import { logger as getLogger } from './shared/logger.js';
-import type { Session } from './server/sessions.js';
+import type { ArgvFactory, Session } from './server/sessions.js';
 import type { TerminalTarget } from './server/targets.js';
 import type {
   SSH,
@@ -65,6 +65,8 @@ export async function decorateServerWithSsh(
   sessionConf: SessionConf = sessionDefault,
   pushConf: PushConf = pushDefault,
   targets: Record<string, TerminalTarget> = loadTerminalTargets(),
+  buildArgv: ArgvFactory = (target, tab, fresh) =>
+    sshArgs(target, ssh, tab, fresh),
 ): Promise<SocketIO.Server> {
   const logger = getLogger();
   app.set('trust proxy', true);
@@ -81,7 +83,7 @@ export async function decorateServerWithSsh(
 
   const push = new PushService(pushConf);
   const registry = new SessionRegistry(
-    (target, tab, fresh) => sshArgs(target, ssh, tab, fresh),
+    buildArgv,
     targets,
     sessionConf,
     (identity, title, body) => push.notify(identity, title, body),

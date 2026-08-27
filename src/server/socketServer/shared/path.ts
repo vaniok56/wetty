@@ -1,12 +1,7 @@
-import { resolve, dirname } from 'path';
-import { fileURLToPath } from 'url';
-import findUp from 'find-up';
+import { resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const filePath = dirname(
-  findUp.sync('package.json', {
-    cwd: dirname(fileURLToPath(import.meta.url)),
-  }) || process.cwd(),
-);
+const filePath = fileURLToPath(new URL('../../../../', import.meta.url));
 
 export const assetsPath = (...args: string[]) =>
   resolve(filePath, 'build', ...args);

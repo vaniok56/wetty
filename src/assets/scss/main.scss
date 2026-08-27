@@ -80,9 +80,15 @@ input {
     height: 12px;
     width: 12px;
 
-    &.red { background: #ff5f56; }
-    &.yellow { background: #ffbd2e; }
-    &.green { background: #27c93f; }
+    &.red {
+      background: #ff5f56;
+    }
+    &.yellow {
+      background: #ffbd2e;
+    }
+    &.green {
+      background: #27c93f;
+    }
   }
 
   .title {
@@ -107,12 +113,27 @@ input {
   gap: 8px;
   padding: 12px;
 
-  &:active { background: rgb(255 255 255 / 6%); }
+  &:active {
+    background: rgb(255 255 255 / 6%);
+  }
 
-  .prompt { color: v.$accent-2; }
-  .command { color: v.$fg; font-weight: 700; }
-  .args { color: v.$accent; flex: 1 1 auto; word-break: break-all; }
-  .meta { color: #6b7684; font-size: 11px; flex: 0 0 100%; }
+  .prompt {
+    color: v.$accent-2;
+  }
+  .command {
+    color: v.$fg;
+    font-weight: 700;
+  }
+  .args {
+    color: v.$accent;
+    flex: 1 1 auto;
+    word-break: break-all;
+  }
+  .meta {
+    color: #6b7684;
+    font-size: 11px;
+    flex: 0 0 100%;
+  }
 }
 
 /* ─── app shell ───────────────────────────────────────────────────────────
@@ -156,8 +177,13 @@ input {
   gap: 4px;
   padding: 6px;
 
-  .chev { font-size: 20px; line-height: 1; }
-  .back-text { font-size: 0.85rem; }
+  .chev {
+    font-size: 20px;
+    line-height: 1;
+  }
+  .back-text {
+    font-size: 0.85rem;
+  }
 }
 
 .topbar-meta {
@@ -186,11 +212,23 @@ input {
   font-size: 0.7rem;
   padding: 4px 8px;
 
-  &[data-state='live'] { background: rgb(124 226 195 / 14%); color: v.$accent-2; }
-  &[data-state='connecting'] { background: rgb(227 179 65 / 14%); color: #e3b341; }
-  &[data-state='reconnecting'] { background: rgb(227 179 65 / 14%); color: #e3b341; }
+  &[data-state='live'] {
+    background: rgb(124 226 195 / 14%);
+    color: v.$accent-2;
+  }
+  &[data-state='connecting'] {
+    background: rgb(227 179 65 / 14%);
+    color: #e3b341;
+  }
+  &[data-state='reconnecting'] {
+    background: rgb(227 179 65 / 14%);
+    color: #e3b341;
+  }
   &[data-state='ended'],
-  &[data-state='error'] { background: rgb(255 123 114 / 14%); color: #ff7b72; }
+  &[data-state='error'] {
+    background: rgb(255 123 114 / 14%);
+    color: #ff7b72;
+  }
 }
 
 .tabs {
@@ -249,13 +287,9 @@ input {
 
   /* The old build set overflow-y:hidden here, which made 1000 lines of
      scrollback completely unreachable on a touch device. */
-  .xterm-viewport {
-    overflow-y: auto;
-    scrollbar-width: none;
+  .xterm-scrollable-element {
     touch-action: pan-y;
     -webkit-overflow-scrolling: touch;
-
-    &::-webkit-scrollbar { width: 0; height: 0; }
   }
 }
 
@@ -393,7 +427,9 @@ input {
   touch-action: pan-x;
   overscroll-behavior-x: contain;
 
-  &::-webkit-scrollbar { height: 0; }
+  &::-webkit-scrollbar {
+    height: 0;
+  }
 
   .key {
     flex: 0 0 auto;
@@ -425,12 +461,25 @@ input {
     color: #000;
   }
 
-  &.arrow { font-size: 16px; }
-  &.expand { flex: 0 0 40px; font-size: 16px; }
-  &.ctrlkey { color: v.$accent-2; }
-  &.fkey { color: v.$muted; }
-  &.tool { color: v.$accent; }
-  &.danger { color: #ff7b72; }
+  &.arrow {
+    font-size: 16px;
+  }
+  &.expand {
+    flex: 0 0 40px;
+    font-size: 16px;
+  }
+  &.ctrlkey {
+    color: v.$accent-2;
+  }
+  &.fkey {
+    color: v.$muted;
+  }
+  &.tool {
+    color: v.$accent;
+  }
+  &.danger {
+    color: #ff7b72;
+  }
 
   /* First tap of a destructive key arms it; a second tap within a few
      seconds commits. */

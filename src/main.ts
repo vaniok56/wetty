@@ -15,7 +15,7 @@ import { setLevel, logger } from './shared/logger.js';
 const require = createRequire(import.meta.url);
 const packageJson = require('../package.json');
 
-const opts = yargs(hideBin(process.argv))
+const cli = yargs(hideBin(process.argv))
   .scriptName(packageJson.name)
   .version(packageJson.version)
   .options('conf', {
@@ -53,8 +53,9 @@ const opts = yargs(hideBin(process.argv))
   .option('log-level', { description: 'log level', type: 'string' })
   .option('help', { alias: 'h', type: 'boolean' })
   .conflicts('host', 'socket')
-  .conflicts('port', 'socket')
-  .parseSync();
+  .conflicts('port', 'socket');
+
+const opts = cli.parseSync();
 
 function cleanup(): void {
   if (opts.socket) {
@@ -64,7 +65,7 @@ function cleanup(): void {
 }
 
 if (opts.help) {
-  yargs.showHelp();
+  cli.showHelp();
   process.exitCode = 0;
 } else {
   process.on('exit', cleanup);

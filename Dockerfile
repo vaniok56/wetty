@@ -1,4 +1,4 @@
-FROM node:20-alpine AS base
+FROM node:22-alpine AS base
 RUN apk add --no-cache build-base python3 py3-setuptools make g++ git
 WORKDIR /app
 RUN corepack enable
@@ -9,8 +9,9 @@ RUN pnpm install --frozen-lockfile
 
 COPY src ./src
 RUN pnpm run build
+RUN pnpm prune --prod
 
-FROM node:20-alpine AS runtime
+FROM node:22-alpine AS runtime
 RUN apk add --no-cache openssh-client
 WORKDIR /app
 
