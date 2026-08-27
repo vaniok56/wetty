@@ -18,8 +18,8 @@ export interface KeybarActions {
   scrollTop: () => void;
   restart: () => void;
   kill: () => void;
-  /** Drop focus off the terminal so a utility tap doesn't raise the keyboard. */
-  releaseKeyboard: () => void;
+  /** Keep a closed soft keyboard closed without disturbing an open one. */
+  preserveKeyboard: () => void;
 }
 
 /** A finger that travels more than this between down and up was scrolling. */
@@ -182,13 +182,6 @@ export function initKeybar(
       return;
     }
 
-    // Everything below is a utility button, not a keystroke. These must not keep
-    // the soft keyboard up — on Android a tap on a still-focused terminal
-    // re-summons it, which is exactly the "⋯ opens the keyboard" complaint.
-    // Search re-focuses its own input, and New shell re-focuses on reattach, so
-    // releasing here is safe for those too.
-    actions.releaseKeyboard();
-
     switch (action) {
       case 'expand':
         setExpanded(secondary?.hidden ?? true);
@@ -245,6 +238,7 @@ export function initKeybar(
     event => {
       const btn = (event.target as HTMLElement)?.closest<HTMLElement>('.key');
       if (!btn) return;
+      actions.preserveKeyboard();
       event.preventDefault();
       active = {
         id: event.pointerId,

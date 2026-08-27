@@ -17,6 +17,7 @@ export interface SearchControl {
 
 export function initSearch(
   search: SearchAddon,
+  keyboardShouldStayOpen: () => boolean,
   refocusTerminal: () => void,
 ): SearchControl {
   const find = (forward: boolean): void => {
@@ -31,13 +32,13 @@ export function initSearch(
     dom.findInput.value = '';
     search.clearDecorations();
     // Hand focus back to the terminal so the keyboard drives the shell again.
-    refocusTerminal();
+    if (keyboardShouldStayOpen()) refocusTerminal();
   };
 
   const toggle = (): void => {
     const opening = dom.findbar.hidden;
     dom.findbar.hidden = !opening;
-    if (opening) dom.findInput.focus();
+    if (opening && keyboardShouldStayOpen()) dom.findInput.focus();
     else close();
   };
 

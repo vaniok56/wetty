@@ -4,7 +4,10 @@ import { dom } from './dom';
  * Tabs are just (identity, target, tab-index) triples on the server, so
  * switching is a fresh `attach` on the same socket. Nothing is stored here.
  */
-export function initTabs(onSelect: (tab: number) => void): {
+export function initTabs(
+  onSelect: (tab: number) => void,
+  preserveKeyboard: () => void,
+): {
   select: (tab: number) => void;
   markLive: (tabs: number[]) => void;
 } {
@@ -28,6 +31,7 @@ export function initTabs(onSelect: (tab: number) => void): {
   dom.tabs.addEventListener('pointerdown', event => {
     const btn = (event.target as HTMLElement)?.closest<HTMLButtonElement>('.tab');
     if (!btn) return;
+    preserveKeyboard();
     event.preventDefault();
     const tab = Number(btn.dataset.tab);
     select(tab);

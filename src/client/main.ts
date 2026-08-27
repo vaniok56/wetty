@@ -69,12 +69,18 @@ term.attachCustomKeyEventHandler(event => {
 
 let lastCols = 0;
 let lastRows = 0;
+let keyboardOpen = false;
+const coarsePointer = window.matchMedia('(pointer: coarse)').matches;
+const preserveKeyboard = (): void => {
+  if (!coarsePointer || keyboardOpen) return;
+  (document.activeElement as HTMLElement | null)?.blur();
+};
 
 // The tab strip and the session each need the other. Indirecting through a
 // mutable handler lets `tabs` exist first, so the Session hooks can close over
 // it without a forward reference.
 let selectTab: (tab: number) => void = () => undefined;
-const tabs = initTabs(tab => selectTab(tab));
+const tabs = initTabs(tab => selectTab(tab), preserveKeyboard);
 
 const session = new Session(term, pageConfig.slug, pageConfig.base, {
   onStatus: setStatus,
@@ -84,7 +90,7 @@ const session = new Session(term, pageConfig.slug, pageConfig.base, {
     tabs.markLive(payload.tabs);
     lastCols = payload.cols;
     lastRows = payload.rows;
-    term.focus();
+    if (!coarsePointer) term.focus();
   },
   onFatal: reason => showOverlay(friendlyMessage(reason), reason),
   onExit: exitCode =>
@@ -119,7 +125,11 @@ const setFontSize = (size: number): void => {
   reflow();
 };
 
-const searchControl = initSearch(search, () => term.focus());
+const searchControl = initSearch(
+  search,
+  () => !coarsePointer || keyboardOpen,
+  () => term.focus(),
+);
 
 /**
  * The keybar Copy button. Prefer xterm's own selection (non-mouse-mode); else
@@ -151,8 +161,7 @@ const mods = initKeybar(
     scrollTop: () => term.scrollToTop(),
     restart: () => session.restart(),
     kill: () => session.kill(),
-    // Utility controls must never summon the soft keyboard.
-    releaseKeyboard: () => term.blur(),
+    preserveKeyboard,
   },
   expanded => {
     settings.keybarExpanded = expanded;
@@ -189,7 +198,12 @@ initTouch(dom.wrap, term, {
   send: data => session.send(data),
 });
 
-initViewport(reflow);
+initViewport(reflow, open => {
+  keyboardOpen = open;
+  if (!open && coarsePointer) {
+    (document.activeElement as HTMLElement | null)?.blur();
+  }
+});
 initOverlay(() => session.retry());
 initLifecycle(session);
 initPwa(pageConfig.base);
@@ -216,4 +230,4 @@ const initialFit = (): void => {
   }
 };
 initialFit();
-term.focus();
+if (!coarsePointer) term.focus();

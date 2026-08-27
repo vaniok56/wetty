@@ -15,14 +15,27 @@
  * contenteditable — which made the browser scroll that tall element into view
  * and drag the whole page up past the top bar.
  */
-export function initViewport(onResize: () => void): void {
+const KEYBOARD_MIN_PX = 150;
+
+export function initViewport(
+  onResize: () => void,
+  onKeyboardChange: (open: boolean) => void,
+): void {
   const root = document.documentElement;
   const vv = window.visualViewport;
   let pending = 0;
+  let maxHeight = vv?.height ?? window.innerHeight;
+  let keyboardOpen = false;
 
   const sync = (): void => {
     const height = vv?.height ?? window.innerHeight;
     const top = vv?.offsetTop ?? 0;
+    if (height > maxHeight) maxHeight = height;
+    const nextKeyboardOpen = maxHeight - height > KEYBOARD_MIN_PX;
+    if (nextKeyboardOpen !== keyboardOpen) {
+      keyboardOpen = nextKeyboardOpen;
+      onKeyboardChange(keyboardOpen);
+    }
     root.style.setProperty('--app-height', `${Math.round(height)}px`);
     root.style.setProperty('--app-top', `${Math.round(top)}px`);
 
@@ -41,6 +54,7 @@ export function initViewport(onResize: () => void): void {
   window.addEventListener('resize', sync);
   // Orientation changes report the old size for a frame or two.
   window.addEventListener('orientationchange', () => {
+    maxHeight = vv?.height ?? window.innerHeight;
     setTimeout(sync, 150);
   });
   // iOS 26 leaves a residual offsetTop behind after the keyboard dismisses;
