@@ -3,6 +3,12 @@
 A web terminal for `terminal.cactuz.icu`, built for using a phone as a real
 terminal. Originally a `WeTTY` fork, now substantially rewritten.
 
+> [!WARNING]
+>
+> This project was fully vibe-coded. It works for its intended private
+> deployment, but nobody independent has audited it. Assume it is unsafe for
+> public exposure.
+
 Two things make it different from a normal browser terminal:
 
 - **Sessions outlive the socket.** Lock your phone, come back an hour later, and
@@ -17,7 +23,8 @@ Two things make it different from a normal browser terminal:
 - `/` lists every machine defined in `conf/targets.json5`
 - `/<slug>` opens an SSH terminal to that machine, in one of 4 tabs
 - the whole site sits behind Cloudflare Access
-- access and session metadata are logged to stdout; Prometheus metrics at `/metrics`
+- access and session metadata are logged to stdout; Prometheus metrics at
+  `/metrics`
 
 ## How persistence works
 
@@ -33,15 +40,15 @@ There are two independent layers, and you want both:
    state. On reattach it serialises that state and the browser rebuilds from it.
 
    This matters because replaying the raw byte stream into a fresh terminal is
-   *wrong* — the stream may have switched to the alternate screen buffer, or
+   _wrong_ — the stream may have switched to the alternate screen buffer, or
    positioned the cursor against scrollback that has since been pruned. This is
    the same design VS Code's pty host uses.
 
-2. **tmux on the remote.** Each tab attaches to `tmux new-session -A -s
-   cactuz-<slug>-<tab>`. That is what survives *this* server restarting, or the
-   network dropping entirely. If tmux is not installed on a host we fall back to
-   a plain login shell — you keep reconnect and snapshot replay, you just lose
-   survival across a container restart.
+2. **tmux on the remote.** Each tab attaches to
+   `tmux new-session -A -s cactuz-<slug>-<tab>`. That is what survives _this_
+   server restarting, or the network dropping entirely. If tmux is not installed
+   on a host we fall back to a plain login shell — you keep reconnect and
+   snapshot replay, you just lose survival across a container restart.
 
 A detached session is held for `SESSION_GRACE_MINUTES` (default 12h) and then
 reaped. Ending a session deliberately is the `End session` key in the keybar.
@@ -50,11 +57,11 @@ reaped. Ending a session deliberately is the `End session` key in the keybar.
 
 Modifiers are **sticky**, Termux-style:
 
-| Interaction  | Result                                     |
-|--------------|--------------------------------------------|
-| tap          | armed — applies to the next key only       |
-| tap twice    | locked — stays until tapped off (filled)   |
-| tap again    | off                                        |
+| Interaction | Result                                   |
+| ----------- | ---------------------------------------- |
+| tap         | armed — applies to the next key only     |
+| tap twice   | locked — stays until tapped off (filled) |
+| tap again   | off                                      |
 
 They are applied at the **data layer**, not by synthesising key events. On
 Android the soft keyboard routes text through the IME, so `keydown` reports
@@ -107,14 +114,14 @@ docker compose restart terminal-cactuz
 
 ### Machine entry schema
 
-| Field  | Required | Type    | Rules                                                              |
-|--------|----------|---------|--------------------------------------------------------------------|
+| Field  | Required | Type    | Rules                                                                         |
+| ------ | -------- | ------- | ----------------------------------------------------------------------------- |
 | `slug` | yes      | string  | `^[a-z0-9][a-z0-9-]*$`; unique; not `client`, `metrics`, `ssh`, `favicon.ico` |
-| `name` | yes      | string  | display label shown on the home page                               |
-| `host` | yes      | string  | IP address or hostname                                             |
-| `user` | yes      | string  | SSH login username                                                 |
-| `port` | no       | integer | 1–65535; defaults to 22                                            |
-| `tmux` | no       | boolean | defaults to `true`                                                 |
+| `name` | yes      | string  | display label shown on the home page                                          |
+| `host` | yes      | string  | IP address or hostname                                                        |
+| `user` | yes      | string  | SSH login username                                                            |
+| `port` | no       | integer | 1–65535; defaults to 22                                                       |
+| `tmux` | no       | boolean | defaults to `true`                                                            |
 
 Unknown fields (e.g. `prot` instead of `port`) are rejected at startup.
 
