@@ -6,16 +6,51 @@ updates:
     schedule:
       interval: weekly
     commit-message:
-      prefix: '[NPM] '
+      prefix: 'chore(deps)'
+    cooldown:
+      default-days: 7
+    groups:
+      xterm:
+        patterns:
+          - '@xterm/*'
+      socket-io:
+        patterns:
+          - 'socket.io'
+          - 'socket.io-client'
+      types:
+        patterns:
+          - '@types/*'
+      eslint:
+        patterns:
+          - 'eslint*'
+          - '@eslint/*'
+          - '@typescript-eslint/*'
+      esbuild:
+        patterns:
+          - 'esbuild*'
   - package-ecosystem: github-actions
     directory: '/'
     schedule:
       interval: weekly
     commit-message:
-      prefix: '[GH action] '
+      prefix: 'ci(deps)'
+    cooldown:
+      default-days: 7
+    groups:
+      github-actions:
+        patterns:
+          - 'actions/*'
+      docker:
+        patterns:
+          - 'docker/*'
+      codeql:
+        patterns:
+          - 'github/codeql-action/*'
   - package-ecosystem: docker
     directory: '/'
     schedule:
       interval: weekly
     commit-message:
-      prefix: '[docker] '
+      prefix: 'chore(deps)'
+    cooldown:
+      default-days: 7
