@@ -15,14 +15,14 @@ const target: TerminalTarget = {
 
 describe('terminal html rendering', () => {
   it('renders host picker links on home page', () => {
-    const html = renderHome('', 'terminal.cactuz.icu', [target]);
-    expect(html).to.contain('terminal.cactuz.icu');
+    const html = renderHome('', 'Test terminal', [target]);
+    expect(html).to.contain('Test terminal');
     expect(html).to.contain('href="/raspik4b"');
     expect(html).to.contain('host_registry');
   });
 
   it('renders terminal page with host metadata', () => {
-    const html = renderTerminal('', 'terminal.cactuz.icu', target);
+    const html = renderTerminal('', 'Test terminal', target);
     expect(html).to.contain('data-slug="raspik4b"');
     expect(html).to.contain('data-name="raspik4b"');
     expect(html).to.contain('id="terminal"');

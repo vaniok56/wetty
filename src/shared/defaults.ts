@@ -19,7 +19,7 @@ export const serverDefault: Server = {
   port: int(process.env.PORT, 3001),
   host: '0.0.0.0',
   socket: false,
-  title: process.env.TITLE || 'terminal.cactuz.icu',
+  title: process.env.TITLE || 'Terminal',
   allowIframe: process.env.ALLOWIFRAME === 'true',
 };
 

@@ -1,7 +1,7 @@
 # terminal-cactuz
 
-A web terminal for `terminal.cactuz.icu`, built for using a phone as a real
-terminal. Originally a `WeTTY` fork, now substantially rewritten.
+A web terminal built for using a phone as a real terminal. Originally a `WeTTY`
+fork, now substantially rewritten.
 
 > [!WARNING]
 >
@@ -181,7 +181,7 @@ ssh-keyscan -p 22 192.168.100.129 >> ./secrets/known_hosts   # reactor
 
 Tunnel route:
 
-- hostname: `terminal.cactuz.icu`
+- hostname: `terminal.example.com`
 - service: `http://terminal-cactuz:3001`
 
 Protection:

@@ -207,7 +207,7 @@ node --version
 docker image inspect terminal-cactuz:baseline --format '{{.Id}} {{.Architecture}}'
 ```
 
-Manual baseline through `https://terminal.cactuz.icu`:
+Manual baseline through `https://terminal.example.com`:
 
 - Cloudflare Access blocks unauthenticated request.
 - Home lists Reactor, Raspik, Raspik4b.
@@ -746,7 +746,7 @@ WORKDIR /app
 ENV NODE_ENV=production \
     BASE=/ \
     PORT=3001 \
-    TITLE=terminal.cactuz.icu \
+    TITLE=Terminal \
     SSHAUTH=publickey \
     SSHKEY=/run/terminal-ssh/id_ed25519 \
     KNOWNHOSTS=/run/terminal-ssh/known_hosts
@@ -1433,7 +1433,7 @@ Unauthenticated edge check:
 ```bash
 curl --silent --show-error --output /dev/null \
   --write-out '%{http_code}\n' \
-  https://terminal.cactuz.icu/
+  https://terminal.example.com/
 ```
 
 Expected Cloudflare Access response: 302 or 403. Public 200 is security stop.

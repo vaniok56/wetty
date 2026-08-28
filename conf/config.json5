@@ -14,7 +14,7 @@
     base:  '/',                  // URL base to serve from
     port:  3001,
     host:  '0.0.0.0',
-    title: 'terminal.cactuz.icu',
+    title: 'Terminal',
     allowIframe: false,          // false pins X-Frame-Options to sameorigin
   },
 

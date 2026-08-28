@@ -18,7 +18,7 @@ WORKDIR /app
 ENV NODE_ENV=production \
     BASE=/ \
     PORT=3001 \
-    TITLE=terminal.cactuz.icu \
+    TITLE=Terminal \
     SSHAUTH=publickey \
     SSHKEY=/run/terminal-ssh/id_ed25519 \
     KNOWNHOSTS=/run/terminal-ssh/known_hosts

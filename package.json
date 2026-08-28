@@ -2,7 +2,7 @@
   "name": "terminal-cactuz",
   "version": "4.0.0",
   "description": "A web terminal built for phones: sessions that outlive the socket, and a keyboard you can actually reach.",
-  "homepage": "https://terminal.cactuz.icu",
+  "homepage": "https://github.com/vaniok56/wetty",
   "license": "MIT",
   "type": "module",
   "bin": "./build/main.js",
