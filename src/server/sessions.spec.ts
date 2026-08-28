@@ -273,7 +273,7 @@ describe('Session persistence', () => {
 
   it('streams live output to attached clients', async function () {
     this.timeout(10_000);
-    const registry = new SessionRegistry(sh('printf "hi\\r\\n"; sleep 5'), targets, conf(), noop);
+    const registry = new SessionRegistry(sh('sleep 0.1; printf "hi\\r\\n"; sleep 5'), targets, conf(), noop);
     live.push(registry);
 
     const sock = fakeSocket('a');
